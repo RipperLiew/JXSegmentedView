@@ -257,7 +257,7 @@ open class JXSegmentedView: UIView, JXSegmentedViewRTLCompatible {
 
         //部分使用者为了适配不同的手机屏幕尺寸，JXSegmentedView的宽高比要求保持一样。所以它的高度就会因为不同宽度的屏幕而不一样。计算出来的高度，有时候会是位数很长的浮点数，如果把这个高度设置给UICollectionView就会触发内部的一个错误。所以，为了规避这个问题，在这里对高度统一向下取整。
         //如果向下取整导致了你的页面异常，请自己重新设置JXSegmentedView的高度，保证为整数即可。
-        let targetFrame = CGRect(x: 0, y: 0, width: bounds.size.width, height: floor(bounds.size.height))
+        let targetFrame = CGRect(x: 0, y:  UIDevice.current.userInterfaceIdiom == .pad ? 12 : 8, width: bounds.size.width, height: floor(bounds.size.height) - (UIDevice.current.userInterfaceIdiom == .pad ? 12 : 8) * 2)
         if isFirstLayoutSubviews {
             isFirstLayoutSubviews = false
             collectionView.frame = targetFrame
@@ -275,6 +275,8 @@ open class JXSegmentedView: UIView, JXSegmentedViewRTLCompatible {
     public final func dequeueReusableCell(withReuseIdentifier identifier: String, at index: Int) -> JXSegmentedBaseCell {
         let indexPath = IndexPath(item: index, section: 0)
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath)
+        cell.layer.cornerRadius = UIDevice.current.userInterfaceIdiom == .pad ? 12 : 8
+        cell.layer.masksToBounds = true
         guard cell.isKind(of: JXSegmentedBaseCell.self) else {
             fatalError("Cell class must be subclass of JXSegmentedBaseCell")
         }
@@ -713,7 +715,18 @@ extension JXSegmentedView: UICollectionViewDelegateFlowLayout {
     }
 
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: itemDataSource[indexPath.item].itemWidth, height: collectionView.bounds.size.height)
+        if let imageDataSource = itemDataSource[indexPath.item] as? JXSegmentedTitleImageItemModel {
+            var itemWidth = imageDataSource.itemWidth
+            switch imageDataSource.titleImageType  {
+            case .leftImage,.rightImage:
+                itemWidth += UIDevice.current.userInterfaceIdiom == .pad ? 35 : 30
+            default:
+                itemWidth += 5
+            }
+            return CGSize.init(width: itemWidth, height: collectionView.bounds.size.height)
+        } else {
+            return CGSize(width: itemDataSource[indexPath.item].itemWidth, height: collectionView.bounds.size.height)
+        }
     }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return innerItemSpacing
