@@ -27,6 +27,9 @@ open class JXSegmentedTitleImageDataSource: JXSegmentedTitleDataSource {
     open var selectedImageInfos: [String]?
     /// 内部默认通过UIImage(named:)加载图片。如果传递的是图片网络地址或者想自己处理图片加载逻辑，可以通过该闭包处理。
     open var loadImageClosure: LoadImageClosure?
+    open var normalBackgroundColor: UIColor?
+    open var selectedBackgroundColor: UIColor?
+
     /// 图片尺寸
     open var imageSize: CGSize = CGSize(width: 20, height: 20)
     /// title和image之间的间隔
@@ -46,12 +49,13 @@ open class JXSegmentedTitleImageDataSource: JXSegmentedTitleDataSource {
         guard let itemModel = itemModel as? JXSegmentedTitleImageItemModel else {
             return
         }
-
-        itemModel.titleImageType = titleImageType
+        itemModel.titleImageType = normalImageInfos?[index] == "" ? .onlyTitle : .leftImage
         itemModel.normalImageInfo = normalImageInfos?[index]
         itemModel.selectedImageInfo = selectedImageInfos?[index]
         itemModel.loadImageClosure = loadImageClosure
         itemModel.imageSize = imageSize
+        itemModel.normalBackgroundColor = normalBackgroundColor
+        itemModel.selectedBackgroundColor = selectedBackgroundColor
         itemModel.isImageZoomEnabled = isImageZoomEnabled
         itemModel.imageNormalZoomScale = 1
         itemModel.imageSelectedZoomScale = imageSelectedZoomScale
